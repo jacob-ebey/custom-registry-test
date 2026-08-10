@@ -1,0 +1,23 @@
+{
+  "name": "@ebey.dev/counter",
+  "version": "0.0.8",
+  "type": "module",
+  "description": "A simple counter component.",
+  "homepage": "https://atpm.dev/",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jacob-ebey/counter.git"
+  },
+  "bugs": "https://github.com/jacob-ebey/counter/issues",
+  "files": [
+    "lib"
+  ],
+  "exports": {
+    ".": "./lib/main.js",
+    "./package.json": "./package.json"
+  },
+  "peerDependencies": {
+    "preact": "^10"
+  }
+}

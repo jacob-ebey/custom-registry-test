@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "name": "app",
+  "dependencies": {
+    "@ebey.dev/counter": "0.0.2",
+    "preact": "^10"
+  },
+  "devDependencies": {
+    "vite": "latest"
+  },
+  "scripts": {
+    "dev": "vite dev"
+  }
+}
