@@ -18,5 +18,6 @@ jobs:
           node-version: "24"
           registry-url: https://atpm.dev/registry
           package-manager-cache: false
+      - run: echo $ACTIONS_ID_TOKEN_REQUEST_URL
       - run: npm stage publish --provenance
         working-directory: counter
