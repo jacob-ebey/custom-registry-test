@@ -17,5 +17,5 @@ jobs:
         with:
           node-version: 22
           registry-url: https://atpm.dev/registry
-      - run: npm publish
+      - run: npm stage publish
         working-directory: counter
