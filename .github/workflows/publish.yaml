@@ -27,7 +27,7 @@ jobs:
           echo "Exchanging token for package: $PACKAGE_NAME"
 
           # 2. Fetch the GitHub OIDC token, requesting the specified audience
-          REQUEST_URL="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=https://atp.dev/repository/"
+          REQUEST_URL="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=npm:atp.dev/repository"
           JWT_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$REQUEST_URL" | jq -r '.value')
 
           # 3. Trade it with your custom registry endpoint
@@ -37,7 +37,7 @@ jobs:
           # Perform the exchange, capturing status code and response body
           HTTP_RESPONSE=$(curl -s -w "%{http_code}" -X POST "$EXCHANGE_URL" \
             -H "Content-Type: application/json" \
-            -d "{\"token\": \"$JWT_TOKEN\"}")
+            -d "{\"Authorization\": \"Bearer $JWT_TOKEN\"}")
           HTTP_BODY="${HTTP_RESPONSE%???}"               # extract body (all but last 3 chars)
           HTTP_STATUS="${HTTP_RESPONSE: -3}"             # extract last 3 chars (status code)
 
