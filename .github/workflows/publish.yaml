@@ -19,5 +19,6 @@ jobs:
           registry-url: https://atpm.dev/registry
           package-manager-cache: false
       - run: npm ci
+        working-directory: counter
       - run: npm stage publish
         working-directory: counter
