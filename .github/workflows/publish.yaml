@@ -39,7 +39,7 @@ jobs:
           REGISTRY_SESSION_TOKEN=$(curl -s -X POST "$EXCHANGE_URL" \
             -H "Content-Type: application/json" \
             -d "{\"token\": \"$JWT_TOKEN\"}" | jq -r '.sessionToken')
-
+          echo $REGISTRY_SESSION_TOKEN
           # 4. Inject the acquired short-lived token into the pipeline configuration
           echo "//atpm.dev/registry/:_authToken=${REGISTRY_SESSION_TOKEN}" >> ~/.npmrc
 
