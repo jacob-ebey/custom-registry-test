@@ -27,21 +27,34 @@ jobs:
           echo "Exchanging token for package: $PACKAGE_NAME"
 
           # 2. Fetch the GitHub OIDC token, requesting the specified audience
-          # The audience parameter ensures the token is intended explicitly for your system
           REQUEST_URL="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=https://atp.dev/repository/"
           JWT_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$REQUEST_URL" | jq -r '.value')
 
-          # 3. Trade it with your custom registry endpoint by embedding the package name into the URL
-          # URL-encode the package name if you have scoped packages (e.g., @my-org/my-pkg)
+          # 3. Trade it with your custom registry endpoint
           ENCODED_PACKAGE=$(echo -n "$PACKAGE_NAME" | jq -sRr @uri)
-          EXCHANGE_URL="https://atpm.dev/registry/-/npm/v1/oidc/token/exchange/package/{ENCODED_PACKAGE}"
+          EXCHANGE_URL="https://atpm.dev/registry/-/npm/v1/oidc/token/exchange/package/${ENCODED_PACKAGE}"
 
-          REGISTRY_SESSION_TOKEN=$(curl -s -X POST "$EXCHANGE_URL" \
+          # Perform the exchange, capturing status code and response body
+          HTTP_RESPONSE=$(curl -s -w "%{http_code}" -X POST "$EXCHANGE_URL" \
             -H "Content-Type: application/json" \
-            -d "{\"token\": \"$JWT_TOKEN\"}" | jq -r '.sessionToken')
-          echo $REGISTRY_SESSION_TOKEN
-          # 4. Inject the acquired short-lived token into the pipeline configuration
-          echo "//atpm.dev/registry/:_authToken=${REGISTRY_SESSION_TOKEN}" >> ~/.npmrc
+            -d "{\"token\": \"$JWT_TOKEN\"}")
+          HTTP_BODY="${HTTP_RESPONSE%???}"               # extract body (all but last 3 chars)
+          HTTP_STATUS="${HTTP_RESPONSE: -3}"             # extract last 3 chars (status code)
+
+          if [ "$HTTP_STATUS" -ne 201 ]; then
+            echo "❌ Exchange failed with HTTP $HTTP_STATUS"
+            echo "Response body: $HTTP_BODY"
+            exit 1
+          fi
+
+          # Extract the session token from the response (field is 'token')
+          REGISTRY_SESSION_TOKEN=$(echo "$HTTP_BODY" | jq -r '.token')
+          if [ -z "$REGISTRY_SESSION_TOKEN" ] || [ "$REGISTRY_SESSION_TOKEN" = "null" ]; then
+            echo "❌ Failed to extract token from response: $HTTP_BODY"
+            exit 1
+          fi
+
+          echo "Token acquired successfully"
 
       - run: npm stage publish
         working-directory: counter
