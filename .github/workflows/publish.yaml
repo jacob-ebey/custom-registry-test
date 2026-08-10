@@ -18,6 +18,30 @@ jobs:
           node-version: "24"
           registry-url: https://atpm.dev/registry
           package-manager-cache: false
-      - run: echo $ACTIONS_ID_TOKEN_REQUEST_URL
-      - run: npm stage publish --provenance
+
+      - name: Exchange OIDC Token
+        working-directory: counter
+        run: |
+          # 1. Read the package name dynamically from package.json
+          PACKAGE_NAME=$(jq -r '.name' package.json)
+          echo "Exchanging token for package: $PACKAGE_NAME"
+
+          # 2. Fetch the GitHub OIDC token, requesting the specified audience
+          # The audience parameter ensures the token is intended explicitly for your system
+          REQUEST_URL="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=https://atp.dev/repository/"
+          JWT_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$REQUEST_URL" | jq -r '.value')
+
+          # 3. Trade it with your custom registry endpoint by embedding the package name into the URL
+          # URL-encode the package name if you have scoped packages (e.g., @my-org/my-pkg)
+          ENCODED_PACKAGE=$(echo -n "$PACKAGE_NAME" | jq -sRr @uri)
+          EXCHANGE_URL="https://atpm.dev/registry/-/npm/v1/oidc/token/exchange/package/{ENCODED_PACKAGE}"
+
+          REGISTRY_SESSION_TOKEN=$(curl -s -X POST "$EXCHANGE_URL" \
+            -H "Content-Type: application/json" \
+            -d "{\"token\": \"$JWT_TOKEN\"}" | jq -r '.sessionToken')
+
+          # 4. Inject the acquired short-lived token into the pipeline configuration
+          echo "//atpm.dev/registry/:_authToken=${REGISTRY_SESSION_TOKEN}" >> ~/.npmrc
+
+      - run: npm stage publish
         working-directory: counter
