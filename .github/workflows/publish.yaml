@@ -29,7 +29,7 @@ jobs:
           echo "Exchanging token for package: $PACKAGE_NAME"
 
           # 2. Fetch the GitHub OIDC token, requesting the specified audience
-          REQUEST_URL="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=npm:atp.dev/repository"
+          REQUEST_URL="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=npm:https://registry.atpm.dev/registry"
           JWT_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$REQUEST_URL" | jq -r '.value')
           echo "Token: $JWT_TOKEN"
 
