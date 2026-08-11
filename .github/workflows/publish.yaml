@@ -55,6 +55,9 @@ jobs:
             exit 1
           fi
 
+          # Write to .npmrc as //atpm.dev/:_authToken=
+          echo "//atpm.dev/:_authToken=$REGISTRY_SESSION_TOKEN" > counter/.npmrc
+
           echo "Token acquired successfully"
 
       - run: npm stage publish
