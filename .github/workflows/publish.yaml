@@ -38,9 +38,7 @@ jobs:
           EXCHANGE_URL="https://atpm.dev/registry/-/npm/v1/oidc/token/exchange/package/${ENCODED_PACKAGE}"
 
           # Perform the exchange, capturing status code and response body
-          HTTP_RESPONSE=$(curl -s -w "%{http_code}" -X POST "$EXCHANGE_URL" \
-            -H "Content-Type: application/json" \
-            -d "{\"Authorization\": \"Bearer $JWT_TOKEN\"}")
+          HTTP_RESPONSE=$(curl -s -w "%{http_code}" -X POST "$EXCHANGE_URL" -H "Authorization: Bearer $JWT_TOKEN")
           HTTP_BODY="${HTTP_RESPONSE%???}"               # extract body (all but last 3 chars)
           HTTP_STATUS="${HTTP_RESPONSE: -3}"             # extract last 3 chars (status code)
 
