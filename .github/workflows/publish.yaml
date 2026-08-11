@@ -22,6 +22,8 @@ jobs:
       - name: Exchange OIDC Token
         working-directory: counter
         run: |
+          set -x
+
           # 1. Read the package name dynamically from package.json
           PACKAGE_NAME=$(jq -r '.name' package.json)
           echo "Exchanging token for package: $PACKAGE_NAME"
@@ -29,6 +31,7 @@ jobs:
           # 2. Fetch the GitHub OIDC token, requesting the specified audience
           REQUEST_URL="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=npm:atp.dev/repository"
           JWT_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$REQUEST_URL" | jq -r '.value')
+          echo "Token: $JWT_TOKEN"
 
           # 3. Trade it with your custom registry endpoint
           ENCODED_PACKAGE=$(echo -n "$PACKAGE_NAME" | jq -sRr @uri)
