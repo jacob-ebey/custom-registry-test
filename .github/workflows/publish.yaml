@@ -56,7 +56,7 @@ jobs:
           fi
 
           # Write to .npmrc as //atpm.dev/:_authToken=
-          echo "//atpm.dev/:_authToken=$REGISTRY_SESSION_TOKEN" > counter/.npmrc
+          echo "//atpm.dev/:_authToken=$REGISTRY_SESSION_TOKEN" > .npmrc
 
           echo "Token acquired successfully"
 
