@@ -1,6 +1,6 @@
 {
   "name": "@ebey.dev/counter",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "type": "module",
   "description": "A simple counter component.",
   "homepage": "https://atpm.dev/",
@@ -10,9 +10,7 @@
     "url": "https://github.com/jacob-ebey/counter.git"
   },
   "bugs": "https://github.com/jacob-ebey/counter/issues",
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "exports": {
     ".": "./lib/main.js",
     "./package.json": "./package.json"
