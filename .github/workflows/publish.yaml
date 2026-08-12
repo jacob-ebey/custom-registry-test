@@ -1,8 +1,6 @@
 name: Publish
 
-on:
-  push:
-    tags: [v*]
+on: [push]
 
 permissions:
   id-token: write
@@ -19,46 +17,43 @@ jobs:
           registry-url: https://atpm.dev/registry
           package-manager-cache: false
 
-      - name: Exchange OIDC Token
-        working-directory: counter
-        run: |
-          set -x
+      # - name: Exchange OIDC Token
+      #   working-directory: counter
+      #   run: |
+      #     # 1. Read the package name dynamically from package.json
+      #     PACKAGE_NAME=$(jq -r '.name' package.json)
+      #     echo "Exchanging token for package: $PACKAGE_NAME"
 
-          # 1. Read the package name dynamically from package.json
-          PACKAGE_NAME=$(jq -r '.name' package.json)
-          echo "Exchanging token for package: $PACKAGE_NAME"
+      #     # 2. Fetch the GitHub OIDC token, requesting the specified audience
+      #     REQUEST_URL="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=npm:atpm.dev"
+      #     JWT_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$REQUEST_URL" | jq -r '.value')
 
-          # 2. Fetch the GitHub OIDC token, requesting the specified audience
-          REQUEST_URL="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=npm:atpm.dev"
-          JWT_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$REQUEST_URL" | jq -r '.value')
-          echo "Token: $JWT_TOKEN"
+      #     # 3. Trade it with your custom registry endpoint
+      #     ENCODED_PACKAGE=$(echo -n "$PACKAGE_NAME" | jq -sRr @uri)
+      #     EXCHANGE_URL="https://atpm.dev/registry/-/npm/v1/oidc/token/exchange/package/${ENCODED_PACKAGE}"
 
-          # 3. Trade it with your custom registry endpoint
-          ENCODED_PACKAGE=$(echo -n "$PACKAGE_NAME" | jq -sRr @uri)
-          EXCHANGE_URL="https://atpm.dev/registry/-/npm/v1/oidc/token/exchange/package/${ENCODED_PACKAGE}"
+      #     # Perform the exchange, capturing status code and response body
+      #     HTTP_RESPONSE=$(curl -s -w "%{http_code}" -X POST "$EXCHANGE_URL" -H "Authorization: Bearer $JWT_TOKEN")
+      #     HTTP_BODY="${HTTP_RESPONSE%???}"               # extract body (all but last 3 chars)
+      #     HTTP_STATUS="${HTTP_RESPONSE: -3}"             # extract last 3 chars (status code)
 
-          # Perform the exchange, capturing status code and response body
-          HTTP_RESPONSE=$(curl -s -w "%{http_code}" -X POST "$EXCHANGE_URL" -H "Authorization: Bearer $JWT_TOKEN")
-          HTTP_BODY="${HTTP_RESPONSE%???}"               # extract body (all but last 3 chars)
-          HTTP_STATUS="${HTTP_RESPONSE: -3}"             # extract last 3 chars (status code)
+      #     if [ "$HTTP_STATUS" -ne 201 ]; then
+      #       echo "❌ Exchange failed with HTTP $HTTP_STATUS"
+      #       echo "Response body: $HTTP_BODY"
+      #       exit 1
+      #     fi
 
-          if [ "$HTTP_STATUS" -ne 201 ]; then
-            echo "❌ Exchange failed with HTTP $HTTP_STATUS"
-            echo "Response body: $HTTP_BODY"
-            exit 1
-          fi
+      #     # Extract the session token from the response (field is 'token')
+      #     REGISTRY_SESSION_TOKEN=$(echo "$HTTP_BODY" | jq -r '.token')
+      #     if [ -z "$REGISTRY_SESSION_TOKEN" ] || [ "$REGISTRY_SESSION_TOKEN" = "null" ]; then
+      #       echo "❌ Failed to extract token from response: $HTTP_BODY"
+      #       exit 1
+      #     fi
 
-          # Extract the session token from the response (field is 'token')
-          REGISTRY_SESSION_TOKEN=$(echo "$HTTP_BODY" | jq -r '.token')
-          if [ -z "$REGISTRY_SESSION_TOKEN" ] || [ "$REGISTRY_SESSION_TOKEN" = "null" ]; then
-            echo "❌ Failed to extract token from response: $HTTP_BODY"
-            exit 1
-          fi
+      #     # Write to .npmrc as //atpm.dev/:_authToken=
+      #     echo "//atpm.dev/:_authToken=$REGISTRY_SESSION_TOKEN" > .npmrc
 
-          # Write to .npmrc as //atpm.dev/:_authToken=
-          echo "//atpm.dev/:_authToken=$REGISTRY_SESSION_TOKEN" > .npmrc
-
-          echo "Token acquired successfully"
+      #     echo "Token acquired successfully"
 
       - run: npm stage publish
         working-directory: counter
