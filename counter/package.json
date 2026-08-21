@@ -1,6 +1,6 @@
 {
   "name": "@ebey.dev/counter",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "type": "module",
   "description": "A simple counter component.",
   "homepage": "https://atpm.dev/",
